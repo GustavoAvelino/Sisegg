@@ -62,7 +62,7 @@ public class UsuarioController {
         ));
     }
 
-    // SALVAR USUÁRIO (rota pública)
+    // SALVAR USUÁRIO (rota pública ou protegida - depende de sua regra)
     @PostMapping("/save")
     public ResponseEntity<String> saveUsuario(@RequestBody UsuarioRequestDTO data) {
         // 1) Criptografa a senha
@@ -129,12 +129,11 @@ public class UsuarioController {
             // 3) Se veio corretoraId, vincula a corretora
             if (data.corretoraId() != null) {
                 Optional<Corretora> corretoraOpt = corretoraRepository.findById(data.corretoraId());
-                if (corretoraOpt.isPresent()) {
-                    usuario.setCorretora(corretoraOpt.get());
-                } else {
+                if (corretoraOpt.isEmpty()) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                             .body("Corretora com o ID fornecido não encontrada.");
                 }
+                usuario.setCorretora(corretoraOpt.get());
             }
 
             // 4) Salva alterações
@@ -160,33 +159,47 @@ public class UsuarioController {
     @GetMapping("/search")
     public ResponseEntity<List<UsuarioResponseDTO>> searchUsuario(
             @RequestParam(required = false) Long id,
-            @RequestParam(required = false) String nomeCom
+            @RequestParam(required = false) String nomeCom,
+            @RequestParam(required = false) Long corretoraId
     ) {
+        List<Usuario> usuarios;
+
         // Filtro por ID
         if (id != null) {
             var usuarioOpt = usuarioRepository.findById(id);
-            if (usuarioOpt.isPresent()) {
-                return ResponseEntity.ok(List.of(new UsuarioResponseDTO(usuarioOpt.get())));
-            } else {
+            if (usuarioOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
+            usuarios = List.of(usuarioOpt.get());
         }
-        // Filtro por nomeCom (contendo, ignorando maiúsculas e minúsculas)
+        // Filtro por nomeCom
         else if (nomeCom != null && !nomeCom.isBlank()) {
-            var usuarios = usuarioRepository.findByNomeComContainingIgnoreCase(nomeCom).stream()
-                .map(UsuarioResponseDTO::new)
-                .toList();
+            usuarios = usuarioRepository.findByNomeComContainingIgnoreCase(nomeCom);
             if (usuarios.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
-            return ResponseEntity.ok(usuarios);
         }
         // Sem filtro, retorna todos
         else {
-            var usuarios = usuarioRepository.findAll().stream()
-                .map(UsuarioResponseDTO::new)
-                .toList();
-            return ResponseEntity.ok(usuarios);
+            usuarios = usuarioRepository.findAll();
         }
+
+        // Filtra pela corretora, se veio corretoraId
+        if (corretoraId != null) {
+            usuarios = usuarios.stream()
+                .filter(u -> u.getCorretora() != null && u.getCorretora().getId().equals(corretoraId))
+                .toList();
+
+            if (usuarios.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+        }
+
+        // Monta a lista de DTO
+        var usuariosDTO = usuarios.stream()
+            .map(UsuarioResponseDTO::new)
+            .toList();
+
+        return ResponseEntity.ok(usuariosDTO);
     }
 }

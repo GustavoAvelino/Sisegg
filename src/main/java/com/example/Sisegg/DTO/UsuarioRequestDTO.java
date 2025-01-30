@@ -1,4 +1,11 @@
 package com.example.Sisegg.DTO;
 
-
-public record UsuarioRequestDTO(Long id, String nomeCom, String email, String senha, String confSenha, int role, Long corretoraId) { }
+public record UsuarioRequestDTO(
+    Long id,
+    String nomeCom,
+    String email,
+    String senha,
+    String confSenha,
+    int role,
+    Long corretoraId // <-- Adicionamos este campo para vincular a corretora
+) { }

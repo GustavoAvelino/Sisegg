@@ -1,14 +1,14 @@
 package com.example.Sisegg.models;
 
 import org.springframework.stereotype.Component;
-
 import com.example.Sisegg.DTO.SeguradoraRequestDTO;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -36,6 +36,11 @@ public class Seguradora {
     private String susep;
     private Double impSeguradora;
 
+    // Nova relação com Corretora
+    @ManyToOne
+    @JoinColumn(name = "corretora_id") 
+    private Corretora corretora;
+
     public Seguradora(SeguradoraRequestDTO data) {
         this.nome = data.nome();
         this.nomefan = data.nomefan();
@@ -44,5 +49,7 @@ public class Seguradora {
         this.telefone = data.telefone();
         this.susep = data.susep();
         this.impSeguradora = data.impSeguradora();
+        // Não setamos a corretora aqui pois recebemos só ID no DTO
+        // A Controller cuidará de buscar e setar a entidade Corretora.
     }
 }
