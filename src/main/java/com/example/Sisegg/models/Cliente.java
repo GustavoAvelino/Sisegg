@@ -4,11 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.Sisegg.DTO.ClienteRequestDTO;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -37,7 +33,9 @@ public class Cliente {
     private String email;
     private String telefone;
 
-    
+    @ManyToOne
+    @JoinColumn(name = "corretora_id") // Cria uma chave estrangeira para a tabela corretora
+    private Corretora corretora;
 
     public Cliente(ClienteRequestDTO data) {
         this.cnpjCpf = data.cnpjCpf();
@@ -49,25 +47,4 @@ public class Cliente {
         this.email = data.email();
         this.telefone = data.telefone();
     }
-
-    public Cliente(String cnpjCpf, String nome, String nomeSocial, String sexo, String dataNascimento, String estadoCivil, String email, String telefone) {
-
-        this.cnpjCpf = cnpjCpf;
-
-        this.nome = nome;
-
-        this.nomeSocial = nomeSocial;
-
-        this.sexo = sexo;
-
-        this.dataNascimento = dataNascimento;
-
-        this.estadoCivil = estadoCivil;
-
-        this.email = email;
-
-        this.telefone = telefone;
-
-    }
-   
 }

@@ -11,12 +11,15 @@ public record ClienteResponseDTO(
     String dataNascimento, 
     String estadoCivil, 
     String email, 
-    String telefone
+    String telefone,
+    Long corretoraId,
+    String corretoraNome
 ) {
-   
     public ClienteResponseDTO(Cliente cliente) {
         this(cliente.getId(), cliente.getCnpjCpf(), cliente.getNome(), cliente.getNomeSocial(),
              cliente.getSexo(), cliente.getDataNascimento(), cliente.getEstadoCivil(), cliente.getEmail(),
-             cliente.getTelefone());
+             cliente.getTelefone(),
+             cliente.getCorretora() != null ? cliente.getCorretora().getId() : null,
+             cliente.getCorretora() != null ? cliente.getCorretora().getNome() : null);
     }
 }

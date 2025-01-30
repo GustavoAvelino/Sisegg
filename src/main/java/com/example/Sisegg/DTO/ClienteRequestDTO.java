@@ -8,5 +8,6 @@ public record ClienteRequestDTO(
     String dataNascimento, 
     String estadoCivil, 
     String email, 
-    String telefone
+    String telefone,
+    Long corretoraId // ID da corretora vinculada ao cliente
 ) {}
