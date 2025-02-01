@@ -6,7 +6,6 @@ import com.example.Sisegg.models.Cliente;
 import com.example.Sisegg.models.Corretora;
 import com.example.Sisegg.repositories.ClienteRepository;
 import com.example.Sisegg.repositories.CorretoraRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +60,7 @@ public class ClienteController {
         if (clienteOpt.isPresent()) {
             return ResponseEntity.ok(new ClienteResponseDTO(clienteOpt.get()));
         }
+        // Se não achar, retorna 404
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
@@ -71,7 +71,7 @@ public class ClienteController {
 
         if (clienteOptional.isPresent()) {
             Cliente cliente = clienteOptional.get();
-            // Atualiza campos básicos
+            // Atualiza campos
             cliente.setCnpjCpf(data.cnpjCpf());
             cliente.setNome(data.nome());
             cliente.setNomeSocial(data.nomeSocial());
@@ -102,6 +102,8 @@ public class ClienteController {
     public ResponseEntity<String> deleteCliente(@PathVariable Long id) {
         Optional<Cliente> clienteOpt = clienteRepository.findById(id);
         if (clienteOpt.isPresent()) {
+            // Se houver veículos vinculados, será lançada a DataIntegrityViolationException,
+            // tratada pelo GlobalExceptionHandler.
             clienteRepository.deleteById(id);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Cliente deletado com sucesso!");
         }
@@ -111,10 +113,10 @@ public class ClienteController {
     // SEARCH - Filtra por id, cnpjCpf, descricao (nome), e corretoraId
     @GetMapping("/search")
     public ResponseEntity<List<ClienteResponseDTO>> searchCliente(
-        @RequestParam(required = false) Long id,
-        @RequestParam(required = false) String cnpjCpf,
-        @RequestParam(required = false) String descricao,
-        @RequestParam(required = false) Long corretoraId
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String cnpjCpf,
+            @RequestParam(required = false) String descricao,
+            @RequestParam(required = false) Long corretoraId
     ) {
         List<Cliente> clientes;
 
