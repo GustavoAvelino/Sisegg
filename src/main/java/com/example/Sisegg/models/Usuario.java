@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.JoinColumn;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -36,6 +37,10 @@ public class Usuario {
     @ManyToOne
     @JoinColumn(name = "corretora_id")
     private Corretora corretora;
+    
+    @OneToOne
+    @JoinColumn(name = "produtor_id", unique = true, nullable = true)
+    private Produtor produtor;
 
     public Usuario(UsuarioRequestDTO data) {
         this.nomeCom = data.nomeCom();

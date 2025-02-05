@@ -3,8 +3,10 @@ package com.example.Sisegg.controllers;
 import com.example.Sisegg.DTO.UsuarioRequestDTO;
 import com.example.Sisegg.DTO.UsuarioResponseDTO;
 import com.example.Sisegg.models.Corretora;
+import com.example.Sisegg.models.Produtor;
 import com.example.Sisegg.models.Usuario;
 import com.example.Sisegg.repositories.CorretoraRepository;
+import com.example.Sisegg.repositories.ProdutorRepository;
 import com.example.Sisegg.repositories.UsuarioRepository;
 import com.example.Sisegg.utils.JwtUtil;
 
@@ -29,6 +31,9 @@ public class UsuarioController {
     @Autowired
     private CorretoraRepository corretoraRepository;
 
+    @Autowired
+    private ProdutorRepository produtorRepository;
+
     // LOGIN (rota pública)
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UsuarioRequestDTO data) {
@@ -46,30 +51,24 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Senha inválida");
         }
 
-        // 3) Gera token JWT
         String token = JwtUtil.generateToken(usuario.getEmail());
-
-        // 4) Captura o ID da corretora (ou null, se não tiver corretora)
-        Long corretoraId = (usuario.getCorretora() != null)
-                ? usuario.getCorretora().getId()
-                : null;
-
+        Long corretoraId = (usuario.getCorretora() != null) ? usuario.getCorretora().getId() : null;
+        Long produtorId = (usuario.getProdutor() != null) ? usuario.getProdutor().getId() : null;
         // 5) Retorna token, nome e corretoraId
         return ResponseEntity.ok(Map.of(
             "token", token,
             "nomeCom", usuario.getNomeCom(),
             "corretoraId", corretoraId,
+            "produtorId", produtorId,
             "role", usuario.getRole()
         ));
     }
 
     // SALVAR USUÁRIO (rota pública ou protegida - depende de sua regra)
-    @PostMapping("/save")
+     @PostMapping("/save")
     public ResponseEntity<String> saveUsuario(@RequestBody UsuarioRequestDTO data) {
-        // 1) Criptografa a senha
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-        // 2) Se foi informado corretoraId, busca a corretora
         Corretora corretora = null;
         if (data.corretoraId() != null) {
             Optional<Corretora> corretoraOptional = corretoraRepository.findById(data.corretoraId());
@@ -80,15 +79,25 @@ public class UsuarioController {
             corretora = corretoraOptional.get();
         }
 
-        // 3) Cria o objeto Usuario a partir do DTO
+        Produtor produtor = null;
+        if (data.produtorId() != null) {
+            Optional<Produtor> produtorOptional = produtorRepository.findById(data.produtorId());
+            if (produtorOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Produtor com o ID fornecido não encontrado.");
+            }
+            produtor = produtorOptional.get();
+        }
+
         Usuario novoUsuario = new Usuario(data);
         novoUsuario.setSenha(passwordEncoder.encode(data.senha()));
         novoUsuario.setCorretora(corretora);
+        novoUsuario.setProdutor(produtor);
 
-        // 4) Salva no banco
         usuarioRepository.save(novoUsuario);
         return ResponseEntity.status(HttpStatus.CREATED).body("Usuário criado com sucesso!");
     }
+
 
     // LISTAR TODOS OS USUÁRIOS (rota protegida)
     @GetMapping
@@ -113,34 +122,35 @@ public class UsuarioController {
     @PutMapping("/update/{id}")
     public ResponseEntity<String> updateUsuario(@PathVariable Long id, @RequestBody UsuarioRequestDTO data) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
-    
         if (usuarioOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado.");
         }
-    
+
         Usuario usuario = usuarioOpt.get();
         usuario.setNomeCom(data.nomeCom());
         usuario.setEmail(data.email());
-    
-        // Se veio senha e não estiver vazia, atualiza.
+
         if (data.senha() != null && !data.senha().isBlank()) {
             BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
             usuario.setSenha(passwordEncoder.encode(data.senha()));
         }
-        // Senão, não faz nada (mantém a senha antiga).
-    
-        // Corretora
+
         if (data.corretoraId() != null) {
             Optional<Corretora> corOpt = corretoraRepository.findById(data.corretoraId());
             if (corOpt.isEmpty()) {
                 return ResponseEntity.badRequest().body("Corretora não encontrada.");
             }
             usuario.setCorretora(corOpt.get());
-        } else {
-            // Se quiser remover a corretora, ajuste conforme necessidade 
-            // usuario.setCorretora(null);
         }
-    
+
+        if (data.produtorId() != null) {
+            Optional<Produtor> prodOpt = produtorRepository.findById(data.produtorId());
+            if (prodOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Produtor não encontrado.");
+            }
+            usuario.setProdutor(prodOpt.get());
+        }
+
         usuarioRepository.save(usuario);
         return ResponseEntity.ok("Usuário atualizado com sucesso!");
     }

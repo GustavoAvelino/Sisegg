@@ -7,5 +7,6 @@ public record UsuarioRequestDTO(
     String senha,
     String confSenha,
     int role,
-    Long corretoraId // <-- Adicionamos este campo para vincular a corretora
+    Long corretoraId,
+    Long produtorId // Adicionado o campo para vínculo com produtor
 ) { }
