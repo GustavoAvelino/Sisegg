@@ -13,12 +13,17 @@ public class JwtUtil {
     private static final Key KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     public static String generateToken(String username) {
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 dia
-                .signWith(KEY) // O algoritmo é deduzido pela chave
-                .compact();
+        try {
+            return Jwts.builder()
+                    .setSubject(username)
+                    .setIssuedAt(new Date())
+                    .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 dia
+                    .signWith(KEY) // O algoritmo é deduzido pela chave
+                    .compact();
+        } catch (Exception e) {
+            e.printStackTrace(); // Para depuração
+            throw new RuntimeException("Erro ao gerar o token JWT", e);
+        }
     }
 
     public static boolean validateToken(String token) {

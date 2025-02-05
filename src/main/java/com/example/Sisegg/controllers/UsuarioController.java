@@ -58,7 +58,8 @@ public class UsuarioController {
         return ResponseEntity.ok(Map.of(
             "token", token,
             "nomeCom", usuario.getNomeCom(),
-            "corretoraId", corretoraId
+            "corretoraId", corretoraId,
+            "role", usuario.getRole()
         ));
     }
 
@@ -112,36 +113,36 @@ public class UsuarioController {
     @PutMapping("/update/{id}")
     public ResponseEntity<String> updateUsuario(@PathVariable Long id, @RequestBody UsuarioRequestDTO data) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
-
-        if (usuarioOpt.isPresent()) {
-            Usuario usuario = usuarioOpt.get();
-
-            // 1) Atualiza campos básicos
-            usuario.setNomeCom(data.nomeCom());
-            usuario.setEmail(data.email());
-
-            // 2) Se veio senha, criptografa e atualiza
-            if (data.senha() != null && !data.senha().isBlank()) {
-                BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-                usuario.setSenha(passwordEncoder.encode(data.senha()));
-            }
-
-            // 3) Se veio corretoraId, vincula a corretora
-            if (data.corretoraId() != null) {
-                Optional<Corretora> corretoraOpt = corretoraRepository.findById(data.corretoraId());
-                if (corretoraOpt.isEmpty()) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body("Corretora com o ID fornecido não encontrada.");
-                }
-                usuario.setCorretora(corretoraOpt.get());
-            }
-
-            // 4) Salva alterações
-            usuarioRepository.save(usuario);
-            return ResponseEntity.status(HttpStatus.OK).body("Usuário atualizado com sucesso!");
+    
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado.");
         }
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado.");
+    
+        Usuario usuario = usuarioOpt.get();
+        usuario.setNomeCom(data.nomeCom());
+        usuario.setEmail(data.email());
+    
+        // Se veio senha e não estiver vazia, atualiza.
+        if (data.senha() != null && !data.senha().isBlank()) {
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            usuario.setSenha(passwordEncoder.encode(data.senha()));
+        }
+        // Senão, não faz nada (mantém a senha antiga).
+    
+        // Corretora
+        if (data.corretoraId() != null) {
+            Optional<Corretora> corOpt = corretoraRepository.findById(data.corretoraId());
+            if (corOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Corretora não encontrada.");
+            }
+            usuario.setCorretora(corOpt.get());
+        } else {
+            // Se quiser remover a corretora, ajuste conforme necessidade 
+            // usuario.setCorretora(null);
+        }
+    
+        usuarioRepository.save(usuario);
+        return ResponseEntity.ok("Usuário atualizado com sucesso!");
     }
 
     // DELETAR USUÁRIO (rota protegida)

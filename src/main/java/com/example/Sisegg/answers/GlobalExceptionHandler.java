@@ -74,8 +74,8 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGlobalException(Exception ex, WebRequest request) {
-        ex.printStackTrace();
-        String mensagem = "Ocorreu um erro inesperado. Tente novamente ou contate o suporte.";
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(mensagem);
+        ex.printStackTrace(); // Isso imprime o erro real no console
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Erro interno: " + ex.getMessage());
     }
 }
