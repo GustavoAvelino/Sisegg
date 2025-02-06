@@ -1,10 +1,12 @@
 package com.example.Sisegg.controllers;
 
+import com.example.Sisegg.DTO.PlacaResponseDTO;
 import com.example.Sisegg.DTO.VeiculoRequestDTO;
 import com.example.Sisegg.DTO.VeiculoResponseDTO;
 import com.example.Sisegg.models.Veiculo;
 import com.example.Sisegg.models.Cliente;
 import com.example.Sisegg.repositories.VeiculoRepository;
+import com.example.Sisegg.services.PlacaService;
 import com.example.Sisegg.repositories.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("veiculo")
@@ -23,6 +26,9 @@ public class VeiculoController {
 
     @Autowired
     private ClienteRepository clienteRepository;
+
+    @Autowired
+    private PlacaService placaService;
 
     // Create (POST)
     @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -176,4 +182,37 @@ public ResponseEntity<VeiculoResponseDTO> updateVeiculo(
             .toList();
         return ResponseEntity.ok(veiculosDTO);
     }
+
+
+
+
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @GetMapping("/consulta-placa/{placa}")
+    public ResponseEntity<?> consultarPlaca(@PathVariable String placa) {
+        try {
+            Map<String, Object> dadosPlaca = placaService.consultarPlaca(placa);
+            return ResponseEntity.ok(dadosPlaca);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao consultar API de placas: " + e.getMessage());
+        }
+    }
+
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+@GetMapping("/consulta-placa-detalhada/{placa}")
+public ResponseEntity<?> consultarPlacaDetalhada(@PathVariable String placa) {
+    try {
+        // Agora consultarPlaca SEMPRE retorna Map<String, Object> ou lança exceção
+        Map<String, Object> dadosPlaca = placaService.consultarPlaca(placa);
+
+        // Monta o DTO
+        PlacaResponseDTO responseDTO = new PlacaResponseDTO(dadosPlaca);
+
+        // Retorna 200 OK com o DTO
+        return ResponseEntity.ok(responseDTO);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Erro ao consultar API de placas: " + e.getMessage());
+    }
+}
 }
