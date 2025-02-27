@@ -31,6 +31,11 @@ public class Produtor {
     private String repasseSobre;
     private String formaRepasse;
 
+
+    @ManyToOne
+    @JoinColumn(name = "corretora_id") // Cria uma chave estrangeira para a tabela corretora
+    private Corretora corretora;
+    
     public Produtor(ProdutorRequestDTO data) {
         this.nome = data.nome();
         this.cpf = data.cpf();

@@ -2,6 +2,9 @@ package com.example.Sisegg.repositories;
 
 import com.example.Sisegg.models.Veiculo;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 
 public interface VeiculoRepository extends JpaRepository<Veiculo, Long> {
@@ -15,6 +18,9 @@ public interface VeiculoRepository extends JpaRepository<Veiculo, Long> {
 
     //Pesquisa combinada
     List<Veiculo> findByPlacaContainingIgnoreCaseAndModeloContainingIgnoreCaseAndClienteId(
-        String placa, String modelo, Long clienteId
-    );
+        String placa, String modelo, Long clienteId);
+
+        
+ 
+ 
 }

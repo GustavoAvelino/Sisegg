@@ -33,12 +33,12 @@ public class VeiculoController {
     // Create (POST)
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @PostMapping("/save")
-    public ResponseEntity<String> saveVeiculo(@RequestBody VeiculoRequestDTO data) {
+    public ResponseEntity<VeiculoResponseDTO> saveVeiculo(@RequestBody VeiculoRequestDTO data) {
         // Verifica se o cliente existe
         Optional<Cliente> clienteOptional = clienteRepository.findById(data.clienteId());
         if (clienteOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Cliente com o ID fornecido não encontrado.");
+                .body(null); // Cliente não encontrado
         }
 
         Cliente cliente = clienteOptional.get();
@@ -60,8 +60,10 @@ public class VeiculoController {
             cliente
         );
 
-        veiculoRepository.save(veiculo);
-        return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 sem body
+        veiculo = veiculoRepository.save(veiculo);
+
+        // Retorna um DTO para evitar erro no front-end
+        return ResponseEntity.status(HttpStatus.CREATED).body(new VeiculoResponseDTO(veiculo));
     }
 
     // Read all
@@ -215,4 +217,8 @@ public ResponseEntity<?> consultarPlacaDetalhada(@PathVariable String placa) {
                 .body("Erro ao consultar API de placas: " + e.getMessage());
     }
 }
+
+
+    
+    
 }

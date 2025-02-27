@@ -23,10 +23,11 @@ public class CorretoraController {
     // Create
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @PostMapping("/save")
-    public ResponseEntity<Void> saveCorretora(@RequestBody CorretoraRequestDTO data){
+    public ResponseEntity<CorretoraResponseDTO> saveCorretora(@RequestBody CorretoraRequestDTO data) {
         Corretora corretoraData = new Corretora(data);
-        repository.save(corretoraData);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        corretoraData = repository.save(corretoraData);
+        // Retorna o objeto criado como resposta JSON para evitar o erro de JSON vazio
+        return ResponseEntity.status(HttpStatus.CREATED).body(new CorretoraResponseDTO(corretoraData));
     }
 
     // Read all
@@ -67,11 +68,9 @@ public class CorretoraController {
             corretora.setTelefone(data.telefone());
             corretora.setSusep(data.susep());
             
-
             repository.save(corretora); // Salva as alterações no banco de dados
             return ResponseEntity.status(HttpStatus.OK).build();
         }
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
@@ -85,10 +84,8 @@ public class CorretoraController {
             repository.deleteById(id); // Exclui a corretora
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); // Retorna 204 (No Content)
         }
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Retorna 404 (Not Found) se não encontrar
     }
-
 
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @GetMapping("/search")

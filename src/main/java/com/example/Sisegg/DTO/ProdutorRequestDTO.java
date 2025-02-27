@@ -12,5 +12,6 @@ public record ProdutorRequestDTO(
     Double imposto,
     Double repasse,
     String repasseSobre,
-    String formaRepasse
+    String formaRepasse,
+    Long corretoraId
 ) {}

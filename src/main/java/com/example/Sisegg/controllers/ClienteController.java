@@ -26,22 +26,24 @@ public class ClienteController {
 
     // CREATE - Salva um novo Cliente
     @PostMapping("/save")
-    public ResponseEntity<String> saveCliente(@RequestBody ClienteRequestDTO data) {
-        Cliente cliente = new Cliente(data);
+public ResponseEntity<ClienteResponseDTO> saveCliente(@RequestBody ClienteRequestDTO data) {
+    Cliente cliente = new Cliente(data);
 
-        // Vincula a corretora, se vier no DTO
-        if (data.corretoraId() != null) {
-            Optional<Corretora> corretoraOpt = corretoraRepository.findById(data.corretoraId());
-            if (corretoraOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Corretora com o ID fornecido não encontrada.");
-            }
-            cliente.setCorretora(corretoraOpt.get());
+    if (data.corretoraId() != null) {
+        Optional<Corretora> corretoraOpt = corretoraRepository.findById(data.corretoraId());
+        if (corretoraOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-
-        clienteRepository.save(cliente);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Cliente criado com sucesso!");
+        cliente.setCorretora(corretoraOpt.get());
     }
+
+    clienteRepository.save(cliente);
+    // Retorna o objeto do cliente criado, convertendo-o em DTO
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(new ClienteResponseDTO(cliente));
+}
+
 
     // READ ALL
     @GetMapping

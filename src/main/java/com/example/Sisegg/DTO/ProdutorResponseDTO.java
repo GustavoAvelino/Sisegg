@@ -15,12 +15,16 @@ public record ProdutorResponseDTO(
     Double imposto,
     Double repasse,
     String repasseSobre,
-    String formaRepasse
+    String formaRepasse,
+    Long corretoraId,
+    String corretoraNome
 ) {
     public ProdutorResponseDTO(Produtor produtor) {
         this(produtor.getId(), produtor.getNome(), produtor.getCpf(), produtor.getCnpj(),
              produtor.getDataNascimento(), produtor.getSexo(), produtor.getEmail(),
              produtor.getTelefone(), produtor.getEndereco(), produtor.getImposto(),
-             produtor.getRepasse(), produtor.getRepasseSobre(), produtor.getFormaRepasse());
+             produtor.getRepasse(), produtor.getRepasseSobre(), produtor.getFormaRepasse(),
+             produtor.getCorretora() != null ? produtor.getCorretora().getId() : null,
+             produtor.getCorretora() != null ? produtor.getCorretora().getNome() : null);
     }
 }

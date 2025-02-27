@@ -39,7 +39,7 @@ public class Usuario {
     private Corretora corretora;
     
     @OneToOne
-    @JoinColumn(name = "produtor_id", unique = true, nullable = true)
+    @JoinColumn(name = "produtor_id",  nullable = true)
     private Produtor produtor;
 
     public Usuario(UsuarioRequestDTO data) {
